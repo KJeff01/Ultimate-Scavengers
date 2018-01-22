@@ -1,0 +1,114 @@
+
+--23 Mar 2012
+v0.02 update. Now they sometimes capture oils, build defensive structures around bases and oils and some power generators if necessary.
+
+--23 Mar 2012
+v0.03: Some more bug fixes in construction code.
+
+--23 Mar 2012
+v0.04: now concentrates attacks, updated crane's texture, more clever tower/unit balance.
+
+--23 Mar 2012
+v0.05: use more varied templates, include Berg's new scavenger tractor body, use tractors as sensors as well.
+
+--23 Mar 2012
+v0.06: bugfixes in attack code, limit number of defender units.
+
+--24 Mar 2012
+v0.07: units don't get stuck around the factories, now works on the latest master.
+
+--27 Mar 2012
+v0.08:
+* Now builds factories
+* More new amazing designs, including the brutal three-turret truck and minipod camper.
+* Better tank/tower balance: now builds towers only when having extra money, but without delays, no longer "patient" (:
+* Attack code improvements.
+
+--27 Mar 2012
+v1.0: Now uses Mysteryem's scavenger tower, a bit more changes in the attack code.
+
+--28 Mar 2012
+v1.01:
+* Capture oils more aggressively
+* Rebalance scavenger weapon and structure stats: don't build structures instantly, make scav lancers stronger, more little changes
+* More new designs, including scavenger MRA trucks (see also #3365)
+* Attack in bigger groups
+* Don't start shooting own units when they are getting damaged due to friendly splash damage (probably i should have left it as a feature?)
+
+--02 Apr 2012
+v1.02: Nexus Link trucks and Ice cream mortar and flamer vans by Berg (aka "join the NEXUS, we have ice cream"), scavenger excavator by Flail13 (kept the Berg's crane though).
+
+--06 Apr 2012
+v1.03:
+* Added scavenger helicopters (model by Black Project) produced in VTOL factories (model by Berg). Every helicopter carries three standard VTOL machineguns. A VTOL factory is build for every three regular factories. Helicopters don't need to rearm, and no VTOL pads are needed.
+* Use the new model for NEXUS tanks.
+* Fix broken generator construction.
+
+--10 Apr 2012
+v1.04:
+Chopper rotor animation by Mysteryem (in fact Berg is still working on improving it)
+Balance changes: delay scavenger start by 30 seconds, produce units a bit slower; add new minipod helicopter, make choppers a bit stronger and faster to produce.
+
+--11 Apr 2012
+v1.05:
+Bugfix: Scavnegers no longer stop producing tanks after hitting control limit (eg. 15 trucks).
+Updated chopper animation by Berg.
+
+--11 Apr 2012
+v1.06:
+* Further chopper animation update.
+* Rebalance: more towers and less units, remove 2nd minipod from the rocket chopper.
+
+--11 Apr 2012
+v1.07:
+Fix: humans no longer produce excavators instead of trucks.
+
+--25 Apr 2012
+v1.08:
+* Use DORDER_SCOUT for attacks, since some problems with it were either fixed or my imagination.
+* Fix broken chopper production on master (always worked well on 3.1
+
+--21 Jun 2012
+v1.09: Done with updating the mod for v3.1 beta11, to keep up with the balance and graphic changes of the new beta, no new features yet though.
+
+
+--22 Jun 2012
+v1.10:
+* Completely rewritten building construction code, now much easier to read and works more often.
+* Behave correctly at unit limits. Should be much stronger on seriously overscavengered maps.
+
+--23 Jun 2012
+v1.11:
+* Scavenger repair facilities! Based on the gas / service station model by Berg. Choppers repair too!
+* Decrease the mod file size by downscaling some textures.
+* Chopper factories are now built only after ~5th minute of the game.
+* Remove redundant team colors from some units.
+* Fix a bug in generator construction code.
+
+--30 Jun 2012
+v1.12:
+* Make use of the new Berg's chopper model for rocket choppers, they are now a bit tougher as well.
+* Add some workaround for getting stuck with truck production at limits (not using 3.2-specific stuff for that yet, but already a bit better)
+* Some more balance tweaks.
+
+--23 Aug 2012
+v1.13:
+* Works on Warzone 2100 v3.1_rc2 (and doesn't work on v3.1_beta11 or v3.1_rc1).
+* Allow disabling scavenger chopper factories and repair facilities in the structure limit menu.
+* Some minor tweaks, chopper death crash probably fixed.
+
+--27 Aug 2012
+v1.14: with a few small tweaks and bug fixes. Most important bug fix is don't try to build structures with a crane heading for repair (results in building many unfinished structures).
+
+--26 Dec 2013
+v1.15: keep up with balance changes of Warzone 2100 v3.1.1.
+
+--25 Sep 2014
+v1.16: fix broken weapon sounds.
+
+--
+v1.17:
+* Works with releases 3.2.2+.
+* Stat and script changes for more difficulty.
+* Improved performance of the attack function so as not to lag too bad.
+* Helicopter chopper blade model fix from Berg.
