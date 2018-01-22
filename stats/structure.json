@@ -34,6 +34,7 @@
                "blvtolpd.pie"
           ],
           "type": "REARM PAD",
+          "userLimits": [ 0, 50, 99 ],
           "width": 1
      },
      "bbaatow": {
@@ -74,6 +75,7 @@
                "scavvtol.pie"
           ],
           "type": "VTOL FACTORY",
+          "userLimits": [ 0, 50, 50 ],
           "width": 2
      },
      "ScavRepairCentre": {
@@ -95,6 +97,7 @@
                "repair.pie"
           ],
           "type": "REPAIR FACILITY",
+          "userLimits": [ 0, 10, 20 ],
           "width": 1
      },
      "A0BaBaBunker": {
@@ -135,6 +138,7 @@
                "BLBRBFAC.PIE"
           ],
           "type": "FACTORY",
+          "userLimits": [ 0, 50, 50 ],
           "width": 2
      },
      "A0BaBaFlameTower": {
@@ -256,6 +260,7 @@
                "BLBRBGEN.PIE"
           ],
           "type": "POWER GENERATOR",
+          "userLimits": [ 0, 30, 30 ],
           "width": 1
      },
      "A0BaBaRocketPit": {
@@ -394,6 +399,7 @@
                "blcfact1.pie"
           ],
           "type": "CYBORG FACTORY",
+          "userLimits": [ 0, 5, 5 ],
           "width": 1
      },
      "A0FacMod1": {
@@ -482,6 +488,7 @@
                "milasbas.pie"
           ],
           "type": "GENERIC",
+          "userLimits": [ 0, 1, 1 ],
           "weapons": [
                "LasSat"
           ],
@@ -510,6 +517,7 @@
                "blfact2.pie"
           ],
           "type": "FACTORY",
+          "userLimits": [ 0, 5, 5 ],
           "width": 3
      },
      "A0PowMod1": {
@@ -550,6 +558,7 @@
                "blpower4.pie"
           ],
           "type": "POWER GENERATOR",
+          "userLimits": [ 0, 10, 10 ],
           "width": 2
      },
      "A0RepairCentre3": {
@@ -571,6 +580,7 @@
                "BLRPAIR3.PIE"
           ],
           "type": "REPAIR FACILITY",
+          "userLimits": [ 0, 5, 5 ],
           "width": 1
      },
      "A0ResearchFacility": {
@@ -594,6 +604,7 @@
                "blresch4.pie"
           ],
           "type": "RESEARCH",
+          "userLimits": [ 0, 5, 5 ],
           "width": 2
      },
      "A0ResearchModule1": {
@@ -648,6 +659,7 @@
                "miupbase.PIE"
           ],
           "type": "SAT UPLINK",
+          "userLimits": [ 0, 1, 1 ],
           "width": 2
      },
      "A0TankTrap": {
@@ -689,6 +701,7 @@
                "blvfact2.pie"
           ],
           "type": "VTOL FACTORY",
+          "userLimits": [ 0, 5, 5 ],
           "width": 3
      },
      "A0VtolPad": {
@@ -710,6 +723,7 @@
                "blvtolpd.pie"
           ],
           "type": "REARM PAD",
+          "userLimits": [ 0, 50, 99 ],
           "width": 1
      },
      "AASite-QuadBof": {
