@@ -2,14 +2,14 @@ const MIN_ATTACKERS = 12;
 const MIN_NEXUS = 4;
 const MAX_DEFENDERS = 8;
 const MAX_GLOBAL_DEFENDERS = 25;
-var MAX_SENSORS; // initialized at game start
+const MAX_SENSORS = 5;
 var currentEnemy;
 var lastChangedEnemyTime;
 
 // unit limit constant
 function atLimits()
 {
-	return enumDroid(me).length > 199;
+	return countDroid(DROID_ANY) > 299;
 }
 
 // random integer between 0 and max-1 (for convenience)
@@ -106,20 +106,13 @@ const templates = [
 	["B4body-sml-trike01","bTrikeMG"],
 	["B4body-sml-trike01","bTrikeMG"],
 	["B4body-sml-trike01","bTrikeMG"],
-	["B4body-sml-trike01","bTrikeMG"],
-	["B4body-sml-trike01","bTrikeMG"],
 	["B3body-sml-buggy01","BuggyMG"],
 	["B3body-sml-buggy01","BuggyMG"],
-	["B3body-sml-buggy01","BuggyMG"],
-	["B3body-sml-buggy01","BuggyMG"],
-	["B2JeepBody","BJeepMG"],
 	["B2JeepBody","BJeepMG"],
 	["B2JeepBody","BJeepMG"],
 	["B2JeepBody","BJeepMG"],
 	["B3bodyRKbuggy01","BabaRocket"],
 	["B3bodyRKbuggy01","BabaRocket"],
-	["B3bodyRKbuggy01","BabaRocket"],
-	["B2RKJeepBody","BabaRocket"],
 	["B2RKJeepBody","BabaRocket"],
 	["B2RKJeepBody","BabaRocket"],
 	["BusBody","BusCannon"],
@@ -162,7 +155,6 @@ function constructBaseInfo(x, y)
 	this.nexusGroup = newGroup(); // tanks to capture the enemy
 	this.builderGroup = newGroup(); // trucks to build base structures and defenses
 	this.attackGroup = newGroup(); // tanks to attack nearby things
-	this.factoryNumber = baseInfo.length;
 }
 
 function findNearest(list, x, y, flag)
@@ -258,12 +250,12 @@ function groupOfTank(droid)
 {
 	for (var i = 0, b = baseInfo.length; i < b; ++i)
 	{
-		if (droid.group == baseInfo[i].attackGroup)
+		if (droid.group === baseInfo[i].attackGroup)
 		{
 			return baseInfo[i].attackGroup;
 		}
 
-		if (droid.group == baseInfo[i].nexusGroup)
+		if (droid.group === baseInfo[i].nexusGroup)
 		{
 			return baseInfo[i].nexusGroup;
 		}
@@ -272,7 +264,7 @@ function groupOfTank(droid)
 
 function buildStructure(droid, stat)
 {
-	if ((droid.order != DORDER_BUILD) && isStructureAvailable(stat, me))
+	if ((droid.order !== DORDER_BUILD) && isStructureAvailable(stat, me))
 	{
 		var loc = pickStructLocation(droid, stat, droid.x, droid.y, 0);
 		if(isDefined(loc) && orderDroidBuild(droid, DORDER_BUILD, stat, loc.x, loc.y))
@@ -354,8 +346,21 @@ function buildThings()
 	for (var i = 0, d = list.length; i < d; ++i)
 	{
 		var droid = list[i];
-		if (!checkAndRepair(droid))
+		if (droid.order !== DORDER_RTR)
 		{
+			//Build a defense at an enemy derrick
+			for (var q = 0; q < maxPlayers; ++q)
+			{
+				var dlist = enumStruct(q, derrick);
+				for (var r = 0, l = dlist.length; r < l; ++r)
+				{
+					var enemy_derrick = dlist[r];
+					if(distBetweenTwoPoints(droid.x, droid.y, enemy_derrick.x, enemy_derrick.y) < 3)
+					{
+						buildTower(droid);
+					}
+				}
+			}
 			buildThingsWithDroid(droid);
 		}
 	}
@@ -383,7 +388,7 @@ function scavBuildDroid(fac, name, body, prop, weapon)
 
 function produceCrane(fac)
 {
-	if(countDroid(DROID_CONSTRUCT, me) > 7)
+	if (countDroid(DROID_CONSTRUCT, me) > 15)
 	{
 		return false;
 	}
@@ -397,10 +402,18 @@ function produceCrane(fac)
 
 function produceDroid(fac)
 {
-	if ((countDroid(DROID_CONSTRUCT, me) < 3) || !random(10))
+	if (countDroid(DROID_CONSTRUCT, me) < 15 || !random(10))
 	{
-		produceCrane(fac);
-		return;
+		if (gameTime < 300000)
+		{
+			produceCrane(fac);
+			return;
+		}
+		else if (countDroid(DROID_CONSTRUCT, me) < 3)
+		{
+			produceCrane(fac);
+			return;
+		}
 	}
 
 	var weapons = [];
@@ -449,7 +462,7 @@ function produceHelicopter(fac)
 			break;
 		}
 	}
-	scavBuildDroid(fac, "Scavenger Helicopter", vtolTemplates[j][0], "Helicopter", weapons);
+	scavBuildDroid(fac, "ScavengerHelicopter", vtolTemplates[j][0], "Helicopter", weapons);
 }
 
 function structureReady(struct)
@@ -487,24 +500,9 @@ function produceThings()
 	}
 }
 
-function checkAndRepair(droid)
-{
-	const MIN_HEALTH = 55;
-
-	if (!(isHeli(droid) || (droid.order == DORDER_BUILD)))
-	{
-		if (droid.health < MIN_HEALTH)
-		{
-			return orderDroid(droid, DORDER_RTR);
-		}
-	}
-
-	return false;
-}
-
 function attackWithDroid(droid, target, force)
 {
-	if(checkAndRepair(droid))
+	if (droid.order === DORDER_RTR)
 	{
 		return;
 	}
@@ -617,7 +615,7 @@ function groundAttackStuff()
 	{
 		return;
 	}
-	if (random(101) < 5)
+	if (random(101) < 25)
 	{
 		changeEnemy();
 	}
@@ -704,35 +702,49 @@ function changeEnemy(player)
 function researchStuff()
 {
 	//Do some research
-	const RES = [
+	var items = [];
+	const RES_1 = [
 		"R-Sys-Engineering01",
-		"R-Defense-WallUpgrade01",
-		"R-Defense-WallUpgrade02",
 		"R-Defense-WallUpgrade03",
-		"R-Wpn-MG-Damage01",
-		"R-Wpn-MG-Damage02",
-		"R-Wpn-MG-Damage03",
-		"R-Vehicle-Engine01",
-		"R-Wpn-Rocket-Damage01",
-		"R-Wpn-Rocket-Damage02",
+		"R-Struc-Materials03",
+		"R-Wpn-MG-Damage04",
+		"R-Wpn-MG-ROF01",
+		"R-Wpn-Cannon-Damage03",
+		"R-Wpn-Cannon-ROF01",
+		"R-Wpn-Cannon-Accuracy01",
+		"R-Vehicle-Engine03",
+		"R-Wpn-Rocket-Damage03",
 		"R-Wpn-Rocket-Accuracy01",
-		"R-Wpn-Mortar-Damage01",
-		"R-Wpn-Mortar-Damage02",
+		"R-Wpn-Mortar-Damage03",
+		"R-Wpn-Mortar-ROF01",
+		"R-Wpn-Mortar-Acc01",
 		"R-Wpn-Flamer-ROF01",
-		"R-Wpn-Flamer-Damage01",
-		"R-Wpn-Flamer-Damage02",
 		"R-Wpn-Flamer-Damage03",
-		"R-Struc-VTOLPad-Upgrade01",
-		"R-Struc-VTOLPad-Upgrade02",
 		"R-Struc-VTOLPad-Upgrade03",
 		"R-Sys-Sensor-Upgrade01",
+		"R-Vehicle-Metals03",
+		"R-Vehicle-Armor-Heat03",
+		"R-Cyborg-Metals03",
+		"R-Cyborg-Armor-Heat03",
 	];
 
-	for (var i = 0, l = RES.length; i < l; ++i)
+	if (gameTime > 60000 * 15 && gameTime < 60000 * 25)
 	{
-		var name = RES[i];
-		enableResearch(name, me);
-		completeResearch(name, me);
+		items = RES_1;
+	}
+
+	for (var i = 0, l = items.length; i < l; ++i)
+	{
+		var reqRes = findResearch(items[i], me).reverse();
+		if (reqRes.length === 0)
+		{
+			continue;
+		}
+
+		for (var s = 0, r = reqRes.length; s < r; ++s)
+		{
+			completeResearch(reqRes[s].name, me); //Duplicates are not researched
+		}
 	}
 }
 
@@ -740,37 +752,35 @@ function researchStuff()
 function eventAttacked(victim, attacker)
 {
 	// don't quarrel because of friendly splash damage
-	if (attacker === null || attacker.player === me)
+	if (attacker === null || victim.player !== me || attacker.player === me)
 	{
 		return;
 	}
 
 	changeEnemy(attacker.player);
 
-	if (victim.type == STRUCTURE)
+	if (victim.type === STRUCTURE)
 	{
 		var base = findNearest(baseInfo, victim.x, victim.y, true);
-		var list = enumGroup(base.defendGroup);
-
-		//Let this base build more defense units then
-		if (!isDefined(list[MAX_DEFENDERS]))
+		if (isDefined(base))
 		{
-			list = enumGroup(base.attackDroids);
-		}
+			var list = enumGroup(base.defendGroup);
 
-		var globalDefenders = enumGroup(globalDefendGroup);
-		for (var i = 0, l = globalDefenders.length; i < l; ++i)
-		{
-			list.push(globalDefenders[i]);
-		}
+			//Let this base build more defense units then
+			if (list.length < Math.floor(MAX_DEFENDERS / 2))
+			{
+				list = enumGroup(base.attackDroids);
+			}
 
-		for (var i = 0, l = list.length; i < l; ++i)
-		{
-			attackWithDroid(list[i], attacker, true);
+			list.concat(enumGroup(globalDefendGroup));
+			for (var i = 0, l = list.length; i < l; ++i)
+			{
+				attackWithDroid(list[i], attacker, true);
+			}
 		}
 
 	}
-	else if (victim.type == DROID)
+	else if (victim.type === DROID)
 	{
 		if (isHeli(victim) && helicopterReady(victim))
 		{
@@ -784,10 +794,7 @@ function eventAttacked(victim, attacker)
 			var list = enumGroup(gr);
 			for (var i = 0, l = list.length; i < l; ++i)
 			{
-				if (list[i].id !== victim.id)
-				{
-					attackWithDroid(list[i], attacker, true);
-				}
+				attackWithDroid(list[i], attacker, true);
 			}
 		}
 	}
@@ -806,14 +813,14 @@ function eventDroidBuilt(droid, fac)
 
 function eventStructureBuilt(structure, droid)
 {
-	if (structure.stattype == FACTORY)
+	if (structure.stattype === FACTORY)
 	{
 		if (!produceCrane(structure))
 		{
 			produceDroid(structure);
 		}
 	}
-	else if (structure.stattype == VTOL_FACTORY)
+	else if (structure.stattype === VTOL_FACTORY)
 	{
 		produceHelicopter(structure);
 	}
@@ -857,7 +864,12 @@ function eventGameInit()
 
 	const SCAV_COMPONENTS = [
 		"B2crane1", "scavCrane1", "B2crane2", "scavCrane2", "ScavSensor",
-		"BaBaProp", "Helicopter",
+		"BaBaProp", "Helicopter", "B2RKJeepBody", "B2tractor", "B3bodyRKbuggy01",
+		"HeavyChopper", "ScavCamperBody", "ScavengerChopper", "ScavIcevanBody",
+		"ScavNEXUSbody", "ScavNEXUStrack", "ScavTruckBody", "MG1-VTOL",
+		"Rocket-VTOL-Pod", "ScavNEXUSlink", "BaBaCannon", "BabaPitRocket",
+		"BabaPitRocketAT", "BabaRocket", "BTowerMG", "Mortar1Mk1", "BusCannon",
+		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "BaBaSensor",
 	];
 
 	for (var i = 0, c = SCAV_COMPONENTS.length; i < c; ++i)
@@ -881,13 +893,29 @@ function eventGameInit()
 // respond correctly on unit transfers
 function eventObjectTransfer(object, from)
 {
-	if (object.type == DROID)
+	if (object.type === DROID)
 	{
 		eventDroidBuilt(object, null);
 	}
 	else
 	{
 		eventStructureBuilt(object, null);
+	}
+}
+
+function retreat()
+{
+	var list = enumArea(0, 0, mapWidth, mapHeight, me).filter(function(obj) { return obj.type === DROID; });
+	for (var i = 0, l = list.length; i < l; ++i)
+	{
+		var droid = list[i];
+		if (droid.order !== DORDER_RTR)
+		{
+			if (droid.health < 80)
+			{
+				orderDroid(droid, DORDER_RTR);
+			}
+		}
 	}
 }
 
@@ -899,7 +927,6 @@ function eventStartLevel()
 		var fac = list[i];
 		baseInfo[i] = new constructBaseInfo(fac.x, fac.y);
 	}
-	MAX_SENSORS = baseInfo.length;
 	currentEnemy = random(maxPlayers);
 	lastChangedEnemyTime = 0;
 	list = enumDroid(me);
@@ -912,11 +939,11 @@ function eventStartLevel()
 	globalDefendGroup = newGroup();
 	needToPickGroup = newGroup();
 
-	queue("researchStuff", 1200000); // 20 minutes
-
 	produceThings();
-	setTimer("produceThings", 1500);
-	setTimer("buildThings", 2500);
-	setTimer("groundAttackStuff", 3400);
-	setTimer("helicopterAttack", 5000);
+	setTimer("retreat", 500);
+	setTimer("produceThings", 900);
+	setTimer("buildThings", 1200);
+	setTimer("groundAttackStuff", 2000);
+	setTimer("helicopterAttack", 3000);
+	setTimer("researchStuff", 120000);
 }
