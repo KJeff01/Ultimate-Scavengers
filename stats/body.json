@@ -163,6 +163,29 @@
 		"weaponSlots": 3,
 		"weight": 1500
 	},
+	"ChinookBody": {
+		"armourHeat": 12,
+		"armourKinetic": 20,
+		"buildPoints": 150,
+		"buildPower": 45,
+		"class": "Droids",
+		"droidType": "TRANSPORTER",
+		"hitpoints": 520,
+		"id": "ChinookBody",
+		"model": "chinook.pie",
+		"name": "chinook",
+		"propulsionExtraModels": {
+			"Helicopter": {
+				"left": "prmheli1.pie",
+				"still": "chinookblades.pie",
+				"moving": "chinookblades.pie"
+			}
+		},
+		"powerOutput": 3500,
+		"size": "LIGHT",
+		"weaponSlots": 3,
+		"weight": 3000
+	},
 	"B1BaBaPerson01": {
 		"armourHeat": 2,
 		"armourKinetic": 3,

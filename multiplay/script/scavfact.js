@@ -64,7 +64,7 @@ function rangeStep(obj, visibility)
 	const STEP = 1000;
 	var target;
 
-	for(var i = 0; i <= 30000; i += STEP)
+	for(var i = 0; i <= visibility === true ? 4000 : 30000; i += STEP)
 	{
 		var temp = enumRange(obj.x, obj.y, i, currentEnemy, visibility);
 		if(isDefined(temp[0]))
@@ -138,14 +138,16 @@ const templates = [
 ];
 
 const vtolTemplates = [
-	["ScavengerChopper","MG1-VTOL","MG1-VTOL","MG1-VTOL"],
-	["HeavyChopper","Rocket-VTOL-Pod"],
+	["ScavengerChopper", "MG1-VTOL-SCAVS", "MG1-VTOL-SCAVS", "MG1-VTOL-SCAVS"],
+	["HeavyChopper", "Rocket-VTOL-Pod-SCAVS"],
 ];
 
 // scav groups
 var globalDefendGroup; // tanks that defend all bases
 var needToPickGroup; // a group
 var baseInfo = [];
+var helicoperAttackers;
+var lifts;
 
 function constructBaseInfo(x, y)
 {
@@ -201,8 +203,11 @@ function addDroidToSomeGroup(droid)
 			{
 
 				if(groupSize(base.nexusGroup) < (2 * MIN_NEXUS))
-				groupAddDroid(base.nexusGroup, droid);
-				else {
+				{
+					groupAddDroid(base.nexusGroup, droid);
+				}
+				else
+				{
 					var rBase = random(baseInfo.length);
 					groupAddDroid(baseInfo[rBase].nexusGroup, droid);
 				}
@@ -523,11 +528,11 @@ function attackWithDroid(droid, target, force)
 	}
 }
 
-function helicopterArmed(obj, percent)
+function helicopterArmed(obj)
 {
 	for (var i = 0; i < obj.weapons.length; ++i)
 	{
-		if (obj.weapons[i].armed >= percent)
+		if (Math.floor(obj.weapons[i].armed) > 0)
 		{
 			return true;
 		}
@@ -536,17 +541,30 @@ function helicopterArmed(obj, percent)
 	return false;
 }
 
+function stillRearming(droid)
+{
+	var counter = 0;
+	for (var i = 0; i < droid.weapons.length; ++i)
+	{
+		if (Math.floor(droid.weapons[i].armed) === 100)
+		{
+			++counter;
+		}
+	}
+
+	return counter === droid.weapons.length;
+}
 
 function helicopterReady(droid)
 {
-	const ARMED_PERCENT = 1;
-
-	if ((droid.order === DORDER_ATTACK) || (droid.order === DORDER_REARM))
+	if (droid.order === DORDER_ATTACK
+		|| (droid.order === DORDER_REARM && stillRearming(droid))
+		|| droid.order === DORDER_RTR)
 	{
 		return false;
 	}
 
-	if (helicopterArmed(droid, ARMED_PERCENT))
+	if (helicopterArmed(droid))
 	{
 		return true;
 	}
@@ -563,20 +581,18 @@ function helicopterReady(droid)
 function helicopterAttack()
 {
 	var list = findFreeHelicopters();
-
-	if (!isDefined(list[0]))
+	if (!list.len)
 	{
 		return;
 	}
 
 	var target = rangeStep(baseInfo[random(baseInfo.length)], true);
-
-	for (var i = 0, l = list.length; i < l; ++i)
+	for (var i = 0, l = list.len; i < l; ++i)
 	{
-		var droid = list[i];
+		var droid = list.copters[i];
 		var coords = [];
 
-		if(isDefined(target))
+		if (isDefined(target))
 		{
 			coords = mapLimits(target.x, target.y, 5, 2, 0, 0);
 		}
@@ -593,20 +609,20 @@ function helicopterAttack()
 	}
 }
 
+//Ignores lifts
 function countHelicopters()
 {
-	var helis = enumDroid(me).filter(function(object) {
-		return isHeli(object);
-	});
-
-	return helis.length;
+	return groupSize(helicoperAttackers);
 }
 
-function findFreeHelicopters(count)
+//ignores lifts
+function findFreeHelicopters()
 {
-	return enumDroid(me).filter(function(object) {
-		return (isHeli(object) && helicopterReady(object));
+	var freeHelis = enumGroup(helicoperAttackers).filter(function(object) {
+		return helicopterReady(object);
 	});
+
+	return {copters: freeHelis, len: freeHelis.length};
 }
 
 function groundAttackStuff()
@@ -615,7 +631,7 @@ function groundAttackStuff()
 	{
 		return;
 	}
-	if (random(101) < 25)
+	if (random(100) < 20)
 	{
 		changeEnemy();
 	}
@@ -679,6 +695,11 @@ function getAliveEnemyPlayers(player)
 
 function changeEnemy(player)
 {
+	if (lastChangedEnemyTime + 50000 > gameTime)
+	{
+		return;
+	}
+
 	if (!isDefined(player) || !getAliveEnemyPlayers(currentEnemy))
 	{
 		var living = getAliveEnemyPlayers();
@@ -688,11 +709,15 @@ function changeEnemy(player)
 			currentEnemy = 0; //Just choose player 0 as a default.
 			return;
 		}
-		currentEnemy = living[random(num)];
+		var temp = living[random(num)];
+		if (temp === currentEnemy)
+		{
+			return;
+		}
+		currentEnemy = temp;
 		lastChangedEnemyTime = gameTime;
 	}
-
-	if (lastChangedEnemyTime + 45000 > gameTime)
+	else if (isDefined(player) && currentEnemy !== player)
 	{
 		currentEnemy = player;
 		lastChangedEnemyTime = gameTime;
@@ -805,9 +830,20 @@ function eventDroidBuilt(droid, fac)
 	if (!isHeli(droid))
 	{
 		groupAddDroid(needToPickGroup, droid);
+		queue("reviseGroups", 200);
+	}
+	else
+	{
+		if (droid.body !== "ChinookBody")
+		{
+			groupAddDroid(helicoperAttackers, droid);
+		}
+		else
+		{
+			groupAddDroid(lifts, droid);
+		}
 	}
 
-	queue("reviseGroups", 200);
 	produceThings();
 }
 
@@ -869,7 +905,7 @@ function eventGameInit()
 		"ScavNEXUSbody", "ScavNEXUStrack", "ScavTruckBody", "MG1-VTOL",
 		"Rocket-VTOL-Pod", "ScavNEXUSlink", "BaBaCannon", "BabaPitRocket",
 		"BabaPitRocketAT", "BabaRocket", "BTowerMG", "Mortar1Mk1", "BusCannon",
-		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "BaBaSensor",
+		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "BaBaSensor", "ChinookBody",
 	];
 
 	for (var i = 0, c = SCAV_COMPONENTS.length; i < c; ++i)
@@ -938,6 +974,8 @@ function eventStartLevel()
 
 	globalDefendGroup = newGroup();
 	needToPickGroup = newGroup();
+	helicopterAttackers = newGroup();
+	lifts = newGroup();
 
 	produceThings();
 	setTimer("retreat", 500);
