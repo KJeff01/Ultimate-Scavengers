@@ -64,7 +64,7 @@ function rangeStep(obj, visibility)
 	const STEP = 1000;
 	var target;
 
-	for(var i = 0; i <= visibility === true ? 4000 : 30000; i += STEP)
+	for(var i = 0; i <= 30000; i += STEP)
 	{
 		var temp = enumRange(obj.x, obj.y, i, currentEnemy, visibility);
 		if(isDefined(temp[0]))
@@ -543,6 +543,11 @@ function helicopterArmed(obj)
 
 function stillRearming(droid)
 {
+	if (droid.order !== DORDER_REARM)
+	{
+		return false;
+	}
+
 	var counter = 0;
 	for (var i = 0; i < droid.weapons.length; ++i)
 	{
@@ -557,14 +562,13 @@ function stillRearming(droid)
 
 function helicopterReady(droid)
 {
-	if (droid.order === DORDER_ATTACK
-		|| (droid.order === DORDER_REARM && stillRearming(droid))
-		|| droid.order === DORDER_RTR)
+	var armed = helicopterArmed(droid);
+	if ((droid.order === DORDER_ATTACK && armed) || stillRearming(droid) || droid.order === DORDER_RTR)
 	{
 		return false;
 	}
 
-	if (helicopterArmed(droid))
+	if (armed)
 	{
 		return true;
 	}
@@ -753,7 +757,7 @@ function researchStuff()
 		"R-Cyborg-Armor-Heat03",
 	];
 
-	if (gameTime > 60000 * 15 && gameTime < 60000 * 25)
+	if (gameTime > 60000 * 20 && gameTime < 60000 * 25)
 	{
 		items = RES_1;
 	}
@@ -939,13 +943,22 @@ function eventObjectTransfer(object, from)
 	}
 }
 
-function retreat()
+function retreat(obj)
 {
-	var list = enumArea(0, 0, mapWidth, mapHeight, me).filter(function(obj) { return obj.type === DROID; });
+	if (isDefined(obj) && obj.type === DROID && droid.order !== DORDER_RTR)
+	{
+		if (droid.health < 80)
+		{
+			orderDroid(droid, DORDER_RTR);
+		}
+		return;
+	}
+
+	var list = enumDroid(me);
 	for (var i = 0, l = list.length; i < l; ++i)
 	{
 		var droid = list[i];
-		if (droid.order !== DORDER_RTR)
+		if (!random(4) && droid.order !== DORDER_RTR)
 		{
 			if (droid.health < 80)
 			{

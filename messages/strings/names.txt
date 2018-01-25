@@ -1,8 +1,8 @@
 /* Names data file for localisation
- * The id's should be less than 20 chars 
+ * The id's should be less than 20 chars
  *
  * Text like this "*text*" is not final and should not be translated.
- */ 
+ */
 
 /*
  * VEHICLES
@@ -153,9 +153,9 @@ SuperTank2				"Alex's Killa"
 
 /* FINAL CYBORGS */
 
-// Cyborgs - shared 
+// Cyborgs - shared
 
-/* TEST CYBORGS */	
+/* TEST CYBORGS */
 CyborgCan01Air				"*TEST - Cyborg Cannon01 Air*"
 CyborgCan01Ground			_("Cyborg Cannon")
 CyborgRkt01Air				"*TEST - Cyborg Rocket01 Air*"
@@ -197,7 +197,7 @@ Construct				"*TEST - Construct*"
 RadarProgram				"*TEST - Radar Program*"
 Demolish				_("Demolish")
 
-/* CONSTRUCTION */	
+/* CONSTRUCTION */
 
 /* PROPULSION */
 
@@ -288,7 +288,7 @@ NX-CyborgPulseLas				"*NX-CyborgPulseLas*"
 PBomb						_("Proximity Bomb Turret")
 SPBomb					_("Proximity Superbomb Turret")
 
-											 
+
 // Collective Specific Defensive Structures
 CollectiveWall				_("Collective Wall")
 CollectiveCWall				_("Collective Corner Wall")
@@ -358,7 +358,7 @@ CAM3RESEARCH				_("CAM3 RESEARCH")
 
 //R-Comp-IDFAccuracy01			"*IDF Fire Accuracy*"
 
-R-Comp-MissileCodes01			_("Missile Targeting Codes") 
+R-Comp-MissileCodes01			_("Missile Targeting Codes")
 R-Comp-MissileCodes02			_("Second Level Missile Targeting Codes")
 R-Comp-MissileCodes03			_("Third Level Missile Firing Codes")
 
@@ -426,7 +426,7 @@ R-Struc-Factory-Upgrade05		"*NOT USED Robotic Manufacturing Mk2*"
 R-Struc-Factory-Upgrade06		"*NOT USED Robotic Manufacturing Mk3*"
 R-Struc-Factory-Upgrade08		"*NOT USED Advanced Manufacturing Mk2*"
 R-Struc-Factory-Upgrade10		_("Advanced Manufacturing Mk3")
-	
+
 //R-Struc-Materials10			_("High Density Base Structure Materials")
 
 
@@ -472,13 +472,13 @@ R-Sys-MobileRepairTurret-02		_("Mobile Repair Upgrade Mk2")
 
 
 R-Sys-CBSensor-Upgrade01		_("CB Sensor Upgrade")
-R-Sys-CBSensor-Upgrade02		_("CB Sensor Upgrade 2")
-R-Sys-CBSensor-Upgrade03		_("CB Sensor Upgrade 3")
+R-Sys-CBSensor-Upgrade02		_("CB Sensor Upgrade Mk2")
+R-Sys-CBSensor-Upgrade03		_("CB Sensor Upgrade Mk3")
 
 //R-Sys-VTOL-RadarTower01		_("VTOL Radar Tower")
 R-Sys-VTOLCBS-Upgrade01			_("VTOL CB Upgrade")
-R-Sys-VTOLCBS-Upgrade02			_("VTOL CB Upgrade 2")
-R-Sys-VTOLCBS-Upgrade03			_("VTOL CB Upgrade 3")
+R-Sys-VTOLCBS-Upgrade02			_("VTOL CB Upgrade Mk2")
+R-Sys-VTOLCBS-Upgrade03			_("VTOL CB Upgrade Mk3")
 R-Sys-VTOLStrike-Upgrade01		_("VTOL Strike Upgrade")
 R-Sys-VTOLStrike-Upgrade02		_("VTOL Strike Upgrade Mk2")
 R-Sys-VTOLStrike-Upgrade03		_("VTOL Strike Upgrade Mk3")
@@ -496,11 +496,11 @@ R-Sys-SensorLock				_("Sensor Lock")
 
 /* RESEARCH - VEHICLES */
 
-	
+
 //R-Vehicle-Engine10			_("Ionizing Turbine Engine")
 
 //R-Vehicle-Metals10			_("Bonded Laminates")
-	
+
 R-Vehicle-Prop-Hover02			_("Hover Propulsion II")
 //R-Vehicle-Prop-Hover03			_("Hover Propulsion III")
 R-Vehicle-Prop-Halftracks02		_("Half-tracked Propulsion II")
