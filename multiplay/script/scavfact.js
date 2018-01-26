@@ -557,13 +557,18 @@ function stillRearming(droid)
 		}
 	}
 
+	if (droid.health < 100)
+	{
+		return false; //get healthy also
+	}
+
 	return counter === droid.weapons.length;
 }
 
 function helicopterReady(droid)
 {
 	var armed = helicopterArmed(droid);
-	if ((droid.order === DORDER_ATTACK && armed) || stillRearming(droid) || droid.order === DORDER_RTR)
+	if ((droid.order === DORDER_ATTACK && armed) || stillRearming(droid))
 	{
 		return false;
 	}
