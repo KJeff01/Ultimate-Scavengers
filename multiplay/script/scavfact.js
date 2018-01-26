@@ -761,6 +761,7 @@ function eventAttacked(victim, attacker)
 	}
 	else if (victim.type === DROID)
 	{
+		retreat(victim);
 		if (isHeli(victim) && helicopterReady(victim))
 		{
 			orderDroidObj(victim, DORDER_ATTACK, attacker);
@@ -895,9 +896,9 @@ function eventObjectTransfer(object, from)
 
 function retreat(obj)
 {
-	if (isDefined(obj) && obj.type === DROID && droid.order !== DORDER_RTR)
+	if (isDefined(obj) && obj.type === DROID && obj.order !== DORDER_RTR)
 	{
-		if (droid.health < 80)
+		if (!isHeli(obj) && obj.health < 75)
 		{
 			orderDroid(droid, DORDER_RTR);
 		}
@@ -908,7 +909,7 @@ function retreat(obj)
 	for (var i = 0, l = list.length; i < l; ++i)
 	{
 		var droid = list[i];
-		if (!random(4) && droid.order !== DORDER_RTR)
+		if (!random(4) && !isHeli(droid) && droid.order !== DORDER_RTR)
 		{
 			if (droid.health < 80)
 			{
@@ -941,7 +942,7 @@ function eventStartLevel()
 	lifts = newGroup();
 
 	produceThings();
-	setTimer("retreat", 500);
+	setTimer("retreat", 600);
 	setTimer("produceThings", 900);
 	setTimer("buildThings", 1200);
 	setTimer("groundAttackStuff", 2000);
