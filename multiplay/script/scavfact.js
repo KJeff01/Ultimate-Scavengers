@@ -46,14 +46,22 @@ function mapLimits(x, y, num1, num2, xOffset, yOffset)
 	var xPos = x + xOffset + random(num1) - num2;
 	var yPos = y + yOffset + random(num1) - num2;
 
-	if(xPos < 2)
-	xPos = 2;
-	if(yPos < 2)
-	yPos = 2;
-	if(xPos >= mapWidth - 2)
-	xPos = mapWidth - 3;
-	if(yPos >= mapHeight - 2)
-	yPos = mapHeight - 3;
+	if (xPos < 2)
+	{
+		xPos = 2;
+	}
+	if (yPos < 2)
+	{
+		yPos = 2;
+	}
+	if (xPos >= mapWidth - 2)
+	{
+		xPos = mapWidth - 3;
+	}
+	if (yPos >= mapHeight - 2)
+	{
+		yPos = mapHeight - 3;
+	}
 
 	return {"x": xPos, "y": yPos};
 }
@@ -64,10 +72,10 @@ function rangeStep(obj, visibility)
 	const STEP = 1000;
 	var target;
 
-	for(var i = 0; i <= 30000; i += STEP)
+	for (var i = 0; i <= 30000; i += STEP)
 	{
 		var temp = enumRange(obj.x, obj.y, i, currentEnemy, visibility);
-		if(isDefined(temp[0]))
+		if (isDefined(temp[0]))
 		{
 			target = temp[0];
 			break;
@@ -190,7 +198,7 @@ function addDroidToSomeGroup(droid)
 {
 	var base = findNearest(baseInfo, droid.x, droid.y, true);
 
-	switch(droid.droidType)
+	switch (droid.droidType)
 	{
 		case DROID_CONSTRUCT:
 		{
@@ -202,7 +210,7 @@ function addDroidToSomeGroup(droid)
 			if (droid.name.indexOf("Nexus") > -1)
 			{
 
-				if(groupSize(base.nexusGroup) < (2 * MIN_NEXUS))
+				if (groupSize(base.nexusGroup) < (2 * MIN_NEXUS))
 				{
 					groupAddDroid(base.nexusGroup, droid);
 				}
@@ -269,10 +277,10 @@ function groupOfTank(droid)
 
 function buildStructure(droid, stat)
 {
-	if ((droid.order !== DORDER_BUILD) && isStructureAvailable(stat, me))
+	if (droid.order !== DORDER_BUILD && isStructureAvailable(stat, me))
 	{
 		var loc = pickStructLocation(droid, stat, droid.x, droid.y, 0);
-		if(isDefined(loc) && orderDroidBuild(droid, DORDER_BUILD, stat, loc.x, loc.y))
+		if (isDefined(loc) && orderDroidBuild(droid, DORDER_BUILD, stat, loc.x, loc.y))
 		{
 			return true;
 		}
@@ -292,7 +300,7 @@ function establishBase(droid)
 	var dist = distBetweenTwoPoints(base.x, base.y, droid.x, droid.y);
 
 	//dist makes sure that factories are not built too close to eachother
-	if ((dist > 8) && buildStructure(droid, factory))
+	if (dist > 8 && buildStructure(droid, factory))
 	{
 		var n = baseInfo.length;
 		baseInfo[n] = new constructBaseInfo(droid.x, droid.y);
@@ -306,24 +314,32 @@ function buildThingsWithDroid(droid)
 {
 	const MAX_FACTORY_COUNT = 30;
 
-	switch(random(7))
+	switch (random(7))
 	{
 		case 0:
 			if ((countStruct(factory) < MAX_FACTORY_COUNT) && ((5 * countStruct(factory)) < countStruct(derrick)) || (playerPower(me) > 500))
+			{
 				establishBase(droid);
+			}
 		break;
 		case 1:
 			if ((countStruct(derrick) - (countStruct(gen) * 4)) > 0)
+			{
 				buildStructure(droid, gen);
+			}
 		break;
 		case 2:
 			if ((4*countStruct(vtolfac)) < countStruct(factory) && (gameTime > 150000))
+			{
 				buildStructure(droid, vtolfac);
+			}
 		break;
 		case 3:
 			var result = findNearest(enumFeature(-1, oilres), droid.x, droid.y, true);
 			if (isDefined(result))
+			{
 				orderDroidBuild(droid, DORDER_BUILD, derrick, result.x, result.y);
+			}
 		break;
 		case 4:
 			if ((playerPower(me) > 60) && (countStruct(repair) < 5) && (gameTime > 200000))
@@ -333,11 +349,15 @@ function buildThingsWithDroid(droid)
 		break;
 		case 5:
 			if (countHelicopters() > 2 * countStruct(vtolpad))
+			{
 				buildStructure(droid, vtolpad);
+			}
 		break;
 		default:
 			if (playerPower(me) > 150)
+			{
 				buildTower(droid);
+			}
 		break;
 	}
 }
@@ -360,7 +380,7 @@ function buildThings()
 				for (var r = 0, l = dlist.length; r < l; ++r)
 				{
 					var enemy_derrick = dlist[r];
-					if(distBetweenTwoPoints(droid.x, droid.y, enemy_derrick.x, enemy_derrick.y) < 3)
+					if (distBetweenTwoPoints(droid.x, droid.y, enemy_derrick.x, enemy_derrick.y) < 3)
 					{
 						buildTower(droid);
 					}
@@ -375,11 +395,11 @@ function scavBuildDroid(fac, name, body, prop, weapon)
 {
 	var success = false;
 
-	if(isDefined(weapon[2]))
+	if (isDefined(weapon[2]))
 	{
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1], weapon[2]);
 	}
-	else if(isDefined(weapon[1]))
+	else if (isDefined(weapon[1]))
 	{
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1]);
 	}
@@ -435,9 +455,9 @@ function produceDroid(fac)
 		var j = random(templates.length);
 		var name = (templates[j][1].indexOf("NEXUS") > -1) ? "Nexus Tank" : "Scavenger unit";
 
-		for(var x = 1; x < 4; ++x)
+		for (var x = 1; x < 4; ++x)
 		{
-			if(isDefined(templates[j][x]))
+			if (isDefined(templates[j][x]))
 			{
 				weapons.push(templates[j][x]);
 			}
@@ -456,9 +476,9 @@ function produceHelicopter(fac)
 	var j = random(vtolTemplates.length);
 	var weapons = [];
 
-	for(var x = 1; x < 4; ++x)
+	for (var x = 1; x < 4; ++x)
 	{
-		if(isDefined(vtolTemplates[j][x]))
+		if (isDefined(vtolTemplates[j][x]))
 		{
 			weapons.push(vtolTemplates[j][x]);
 		}
@@ -519,7 +539,7 @@ function attackWithDroid(droid, target, force)
 			orderDroidObj(droid, DORDER_ATTACK, target);
 		}
 	}
-	else if(droid.droidType === DROID_SENSOR)
+	else if (droid.droidType === DROID_SENSOR)
 	{
 		if ((droid.order !== DORDER_OBSERVE) || force)
 		{
@@ -636,7 +656,7 @@ function findFreeHelicopters()
 
 function groundAttackStuff()
 {
-	if(!baseInfo.length)
+	if (!baseInfo.length)
 	{
 		return;
 	}
@@ -647,13 +667,13 @@ function groundAttackStuff()
 
 	var target = rangeStep(baseInfo[random(baseInfo.length)], false);
 
-	if(isDefined(target))
+	if (isDefined(target))
 	{
 		for (var i = 0, l = baseInfo.length; i < l; ++i)
 		{
 			var base = baseInfo[i];
 			var attackDroids = enumGroup(base.attackGroup);
-			if(isDefined(target) && (attackDroids.length > MIN_ATTACKERS))
+			if (isDefined(target) && attackDroids.length > MIN_ATTACKERS)
 			{
 				attackWithDroid(attackDroids[i], target, false);
 			}
@@ -663,7 +683,7 @@ function groundAttackStuff()
 		{
 			var base = baseInfo[i];
 			var nexusDroids = enumGroup(base.nexusGroup);
-			if(isDefined(target) && (nexusDroids.length > MIN_NEXUS))
+			if (isDefined(target) && nexusDroids.length > MIN_NEXUS)
 			{
 				attackWithDroid(nexusDroids[i], target, true);
 			}
