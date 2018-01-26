@@ -906,10 +906,10 @@ function eventGameInit()
 		"B2crane1", "scavCrane1", "B2crane2", "scavCrane2", "ScavSensor",
 		"BaBaProp", "Helicopter", "B2RKJeepBody", "B2tractor", "B3bodyRKbuggy01",
 		"HeavyChopper", "ScavCamperBody", "ScavengerChopper", "ScavIcevanBody",
-		"ScavNEXUSbody", "ScavNEXUStrack", "ScavTruckBody", "MG1-VTOL",
-		"Rocket-VTOL-Pod", "ScavNEXUSlink", "BaBaCannon", "BabaPitRocket",
+		"ScavNEXUSbody", "ScavNEXUStrack", "ScavTruckBody", "MG1-VTOL-SCAVS",
+		"Rocket-VTOL-Pod-SCAVS", "ScavNEXUSlink", "BaBaCannon", "BabaPitRocket",
 		"BabaPitRocketAT", "BabaRocket", "BTowerMG", "Mortar1Mk1", "BusCannon",
-		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "BaBaSensor", "ChinookBody",
+		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "ChinookBody",
 	];
 
 	for (var i = 0, c = SCAV_COMPONENTS.length; i < c; ++i)

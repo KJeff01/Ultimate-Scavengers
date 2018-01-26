@@ -53,7 +53,7 @@
 		"hitpoints": 130,
 		"id": "ScavCamperBody",
 		"model": "camper.pie",
-		"name": "*scavengercamper*",
+		"name": "*scavenger camper*",
 		"powerOutput": 2200,
 		"size": "LIGHT",
 		"weaponSlots": 1,
@@ -68,7 +68,7 @@
 		"hitpoints": 160,
 		"id": "ScavIcevanBody",
 		"model": "icevan.pie",
-		"name": "*scavengericevan*",
+		"name": "*scavenger ice van*",
 		"powerOutput": 2200,
 		"size": "LIGHT",
 		"weaponSlots": 1,
@@ -83,7 +83,7 @@
 		"hitpoints": 190,
 		"id": "ScavTruckBody",
 		"model": "scavtruck.pie",
-		"name": "*scavengertruck*",
+		"name": "*scavenger truck*",
 		"powerOutput": 8000,
 		"size": "LIGHT",
 		"weaponSlots": 1,
@@ -98,7 +98,7 @@
 		"hitpoints": 180,
 		"id": "ScavNEXUSbody",
 		"model": "scavnexus.pie",
-		"name": "*scavengernexustank*",
+		"name": "*scavenger nexus tank*",
 		"powerOutput": 5000,
 		"size": "LIGHT",
 		"weaponSlots": 1,
@@ -113,7 +113,7 @@
 		"hitpoints": 225,
 		"id": "ScavNEXUStrack",
 		"model": "nextrack.pie",
-		"name": "*scavengernexustrack*",
+		"name": "*scavenger nexus track*",
 		"powerOutput": 15000,
 		"size": "LIGHT",
 		"weaponSlots": 1,
@@ -128,14 +128,14 @@
 		"hitpoints": 130,
 		"id": "ScavengerChopper",
 		"model": "scavchop.pie",
-		"name": "*scavengechopper*",
+		"name": "*scavenger chopper*",
 		"powerOutput": 2000,
 		"propulsionExtraModels": {
 			"Helicopter": {
 				"left": "prlheli1.pie",
 				"moving": "chblades.pie",
-				"right": "chblades.pie",
-				"still": "mediumheli_rotor_stationary.pie"
+				"still": "mediumheli_rotor_stationary.pie",
+				"right": "prlheli1.pie"
 			}
 		},
 		"size": "LIGHT",
@@ -151,14 +151,14 @@
 		"hitpoints": 230,
 		"id": "HeavyChopper",
 		"model": "hvychop.pie",
-		"name": "*heavychopper*",
+		"name": "*heavy chopper*",
 		"powerOutput": 2800,
 		"propulsionExtraModels": {
 			"Helicopter": {
 				"left": "prmheli1.pie",
 				"moving": "hvyblades.pie",
-				"right": "hvyblades.pie",
-				"still": "hvyblades-still.pie"
+				"still": "hvyblades-still.pie",
+				"right": "prmheli1.pie"
 			}
 		},
 		"size": "LIGHT",
@@ -179,9 +179,9 @@
 		"propulsionExtraModels": {
 			"Helicopter": {
 				"left": "prmheli1.pie",
+				"moving": "chinookblades.pie",
 				"still": "chinookblades.pie",
-				"right": "chinookblades.pie",
-				"moving": "chinookblades.pie"
+				"right": "prmheli1.pie"
 			}
 		},
 		"powerOutput": 3500,
