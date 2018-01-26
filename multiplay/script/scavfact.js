@@ -728,56 +728,6 @@ function changeEnemy(player)
 	}
 }
 
-function researchStuff()
-{
-	//Do some research
-	var items = [];
-	const RES_1 = [
-		"R-Sys-Engineering01",
-		"R-Defense-WallUpgrade03",
-		"R-Struc-Materials03",
-		"R-Wpn-MG-Damage04",
-		"R-Wpn-MG-ROF01",
-		"R-Wpn-Cannon-Damage03",
-		"R-Wpn-Cannon-ROF01",
-		"R-Wpn-Cannon-Accuracy01",
-		"R-Vehicle-Engine03",
-		"R-Wpn-Rocket-Damage03",
-		"R-Wpn-Rocket-Accuracy01",
-		"R-Wpn-Mortar-Damage03",
-		"R-Wpn-Mortar-ROF01",
-		"R-Wpn-Mortar-Acc01",
-		"R-Wpn-Flamer-ROF01",
-		"R-Wpn-Flamer-Damage03",
-		"R-Struc-VTOLPad-Upgrade03",
-		"R-Sys-Sensor-Upgrade01",
-		"R-Vehicle-Metals03",
-		"R-Vehicle-Armor-Heat03",
-		"R-Cyborg-Metals03",
-		"R-Cyborg-Armor-Heat03",
-	];
-
-	if (gameTime > 60000 * 20 && gameTime < 60000 * 25)
-	{
-		items = RES_1;
-	}
-
-	for (var i = 0, l = items.length; i < l; ++i)
-	{
-		var reqRes = findResearch(items[i], me).reverse();
-		if (reqRes.length === 0)
-		{
-			continue;
-		}
-
-		for (var s = 0, r = reqRes.length; s < r; ++s)
-		{
-			completeResearch(reqRes[s].name, me); //Duplicates are not researched
-		}
-	}
-}
-
-
 function eventAttacked(victim, attacker)
 {
 	// don't quarrel because of friendly splash damage
@@ -996,5 +946,4 @@ function eventStartLevel()
 	setTimer("buildThings", 1200);
 	setTimer("groundAttackStuff", 2000);
 	setTimer("helicopterAttack", 3000);
-	setTimer("researchStuff", 120000);
 }
