@@ -786,12 +786,13 @@ function eventAttacked(victim, attacker)
 	}
 	else if (victim.type === DROID)
 	{
-		retreat(victim);
 		if (isHeli(victim) && helicopterReady(victim))
 		{
 			orderDroidObj(victim, DORDER_ATTACK, attacker);
 			return;
 		}
+
+		retreat(victim);
 
 		var gr = groupOfTank(victim);
 		if (isDefined(gr))
@@ -925,7 +926,7 @@ function retreat(obj)
 	{
 		if (!isHeli(obj) && obj.health < 75)
 		{
-			orderDroid(droid, DORDER_RTR);
+			orderDroid(obj, DORDER_RTR);
 		}
 		return;
 	}
