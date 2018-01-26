@@ -222,10 +222,9 @@ function addDroidToSomeGroup(droid)
 				break;
 			}
 
-			if (groupSize(globalDefendGroup) < MAX_GLOBAL_DEFENDERS)
+			if (groupSize(base.defendGroup) < MAX_DEFENDERS)
 			{
-				groupAddDroid(globalDefendGroup, droid);
-				break;
+				groupAddDroid(base.defendGroup, droid);
 			}
 
 			if(groupSize(base.attackGroup) < MIN_ATTACKERS)
@@ -234,9 +233,10 @@ function addDroidToSomeGroup(droid)
 				break;
 			}
 
-			if (groupSize(base.defendGroup) < MAX_DEFENDERS)
+			if (groupSize(globalDefendGroup) < MAX_GLOBAL_DEFENDERS)
 			{
-				groupAddDroid(base.defendGroup, droid);
+				groupAddDroid(globalDefendGroup, droid);
+				break;
 			}
 			else
 			{
@@ -561,43 +561,16 @@ function helicopterArmed(obj)
 	return false;
 }
 
-function stillRearming(droid)
-{
-	if (droid.order !== DORDER_REARM)
-	{
-		return false;
-	}
-
-	var counter = 0;
-	for (var i = 0; i < droid.weapons.length; ++i)
-	{
-		if (Math.floor(droid.weapons[i].armed) === 100)
-		{
-			++counter;
-		}
-	}
-
-	if (droid.health < 100)
-	{
-		return false; //get healthy also
-	}
-
-	return counter === droid.weapons.length;
-}
-
 function helicopterReady(droid)
 {
-	var armed = helicopterArmed(droid);
-	if ((droid.order === DORDER_ATTACK && armed) || stillRearming(droid))
+	if (droid.order === DORDER_ATTACK || droid.order === DORDER_REARM)
 	{
 		return false;
 	}
-
-	if (armed)
+	if (helicopterArmed(droid) && droid.health > 50)
 	{
 		return true;
 	}
-
 	if (droid.order !== DORDER_REARM)
 	{
 		orderDroid(droid, DORDER_REARM);
@@ -786,9 +759,8 @@ function eventAttacked(victim, attacker)
 	}
 	else if (victim.type === DROID)
 	{
-		if (isHeli(victim) && helicopterReady(victim))
+		if (isHeli(victim))
 		{
-			orderDroidObj(victim, DORDER_ATTACK, attacker);
 			return;
 		}
 
