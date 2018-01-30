@@ -79,7 +79,7 @@
 		],
 		"thermal": 5,
 		"type": "VTOL FACTORY",
-		"userLimits": [0, 50, 50],
+		"userLimits": [0, 30, 30],
 		"width": 2
 	},
 	"ScavRepairCentre": {
@@ -145,7 +145,7 @@
 		],
 		"thermal": 5,
 		"type": "FACTORY",
-		"userLimits": [0, 50, 50],
+		"userLimits": [0, 30, 30],
 		"width": 2
 	},
 	"A0BaBaFlameTower": {
