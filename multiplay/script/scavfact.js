@@ -227,15 +227,15 @@ function addDroidToSomeGroup(droid)
 				groupAddDroid(base.defendGroup, droid);
 			}
 
-			if (groupSize(base.attackGroup) < MIN_ATTACKERS)
-			{
-				groupAddDroid(base.attackGroup, droid);
-				break;
-			}
-
 			if (groupSize(globalDefendGroup) < MAX_GLOBAL_DEFENDERS)
 			{
 				groupAddDroid(globalDefendGroup, droid);
+				break;
+			}
+
+			if (groupSize(base.attackGroup) < MIN_ATTACKERS)
+			{
+				groupAddDroid(base.attackGroup, droid);
 				break;
 			}
 			else
@@ -587,10 +587,11 @@ function helicopterAttack()
 		return;
 	}
 
+	var cheatVision = (random(100) < 25);
 	for (var i = 0, l = list.len; i < l; ++i)
 	{
 		var droid = list.copters[i];
-		var target = rangeStep(findNearest(baseInfo, droid.x, droid.y, true), true);
+		var target = rangeStep(findNearest(baseInfo, droid.x, droid.y, true), cheatVision);
 		var coords = [];
 
 		if (isDefined(target))
