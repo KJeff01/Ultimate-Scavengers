@@ -9,7 +9,7 @@
 		"id": "B2crane1",
 		"model": "cranebody1.pie",
 		"name": "*crane1*",
-		"powerOutput": 3600,
+		"powerOutput": 2600,
 		"size": "LIGHT",
 		"weaponSlots": 1,
 		"weight": 1600
@@ -24,7 +24,7 @@
 		"id": "B2crane2",
 		"model": "cranebody2.pie",
 		"name": "*crane2*",
-		"powerOutput": 2200,
+		"powerOutput": 2000,
 		"size": "LIGHT",
 		"weaponSlots": 1,
 		"weight": 1600
