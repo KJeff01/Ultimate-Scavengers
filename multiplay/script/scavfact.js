@@ -209,15 +209,9 @@ function addDroidToSomeGroup(droid)
 		{
 			if (droid.name.indexOf("Nexus") > -1)
 			{
-
-				if (groupSize(base.nexusGroup) < (2 * MIN_NEXUS))
+				if (groupSize(base.nexusGroup) < MIN_NEXUS)
 				{
 					groupAddDroid(base.nexusGroup, droid);
-				}
-				else
-				{
-					var rBase = random(baseInfo.length);
-					groupAddDroid(baseInfo[rBase].nexusGroup, droid);
 				}
 				break;
 			}
@@ -227,15 +221,15 @@ function addDroidToSomeGroup(droid)
 				groupAddDroid(base.defendGroup, droid);
 			}
 
-			if (groupSize(globalDefendGroup) < MAX_GLOBAL_DEFENDERS)
-			{
-				groupAddDroid(globalDefendGroup, droid);
-				break;
-			}
-
 			if (groupSize(base.attackGroup) < MIN_ATTACKERS)
 			{
 				groupAddDroid(base.attackGroup, droid);
+				break;
+			}
+
+			if (groupSize(globalDefendGroup) < MAX_GLOBAL_DEFENDERS)
+			{
+				groupAddDroid(globalDefendGroup, droid);
 				break;
 			}
 			else
@@ -736,6 +730,14 @@ function eventAttacked(victim, attacker)
 	}
 
 	changeEnemy(attacker.player);
+	if (random(100) < 15)
+	{
+		var droids = enumGroup(globalDefendGroup);
+		for (var i = 0, l = droids.length; i < l; ++i)
+		{
+			attackWithDroid(droids[i], attacker, true);
+		}
+	}
 
 	if (victim.type === STRUCTURE)
 	{
@@ -750,7 +752,6 @@ function eventAttacked(victim, attacker)
 				list = enumGroup(base.attackDroids);
 			}
 
-			list.concat(enumGroup(globalDefendGroup));
 			for (var i = 0, l = list.length; i < l; ++i)
 			{
 				attackWithDroid(list[i], attacker, true);
