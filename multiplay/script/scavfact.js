@@ -227,7 +227,7 @@ function addDroidToSomeGroup(droid)
 				groupAddDroid(base.defendGroup, droid);
 			}
 
-			if(groupSize(base.attackGroup) < MIN_ATTACKERS)
+			if (groupSize(base.attackGroup) < MIN_ATTACKERS)
 			{
 				groupAddDroid(base.attackGroup, droid);
 				break;
@@ -240,8 +240,7 @@ function addDroidToSomeGroup(droid)
 			}
 			else
 			{
-				var rBase = random(baseInfo.length);
-				groupAddDroid(baseInfo[rBase].attackGroup, droid);
+				groupAddDroid(base.attackGroup, droid);
 			}
 		}
 		break;
