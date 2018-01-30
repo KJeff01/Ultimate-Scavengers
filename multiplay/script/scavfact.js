@@ -526,7 +526,7 @@ function produceThings()
 
 function attackWithDroid(droid, target, force)
 {
-	if (droid.order === DORDER_RTR)
+	if (isHeli(droid) || droid.order === DORDER_RTR)
 	{
 		return;
 	}
@@ -562,7 +562,7 @@ function helicopterArmed(obj)
 
 function helicopterReady(droid)
 {
-	if (droid.order === DORDER_ATTACK || droid.order === DORDER_REARM)
+	if (droid.order === DORDER_REARM)
 	{
 		return false;
 	}
@@ -587,10 +587,10 @@ function helicopterAttack()
 		return;
 	}
 
-	var target = rangeStep(baseInfo[random(baseInfo.length)], true);
 	for (var i = 0, l = list.len; i < l; ++i)
 	{
 		var droid = list.copters[i];
+		var target = rangeStep(findNearest(baseInfo, droid.x, droid.y, true), true);
 		var coords = [];
 
 		if (isDefined(target))
@@ -637,27 +637,28 @@ function groundAttackStuff()
 		changeEnemy();
 	}
 
-	var target = rangeStep(baseInfo[random(baseInfo.length)], false);
-
-	if (isDefined(target))
+	for (var i = 0, l = baseInfo.length; i < l; ++i)
 	{
-		for (var i = 0, l = baseInfo.length; i < l; ++i)
+		var base = baseInfo[i];
+		var target = rangeStep(base, false);
+		if (isDefined(target))
 		{
-			var base = baseInfo[i];
 			var attackDroids = enumGroup(base.attackGroup);
-			if (isDefined(target) && attackDroids.length > MIN_ATTACKERS)
-			{
-				attackWithDroid(attackDroids[i], target, false);
-			}
-		}
-
-		for (var i = 0, l = baseInfo.length; i < l; ++i)
-		{
-			var base = baseInfo[i];
 			var nexusDroids = enumGroup(base.nexusGroup);
-			if (isDefined(target) && nexusDroids.length > MIN_NEXUS)
+			if (groupSize(base.attackGroup) > MIN_ATTACKERS)
 			{
-				attackWithDroid(nexusDroids[i], target, true);
+				for (var i = 0, l = attackDroids.length; i < l; ++i)
+				{
+					attackWithDroid(attackDroids[i], target, false);
+				}
+			}
+
+			if (groupSize(base.nexusGroup) > MIN_NEXUS)
+			{
+				for (var i = 0, l = nexusDroids.length; i < l; ++i)
+				{
+					attackWithDroid(nexusDroids[i], target, false);
+				}
 			}
 		}
 	}
