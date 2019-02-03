@@ -10,89 +10,6 @@ const MAX_CRANES = 10;
 const CRANE_BODY = "B2crane";
 const CRANE_WEAP = "scavCrane";
 
-// unit limit constant
-function atLimits()
-{
-	return countDroid(DROID_ANY, me) >= MAX_UNITS;
-}
-
-// random integer between 0 and max-1 (for convenience)
-function random(max)
-{
-	return (max <= 0) ? 0 : Math.floor(Math.random() * max);
-}
-
-// Returns true if something is defined
-function isDefined(data)
-{
-	return typeof(data) !== "undefined";
-}
-
-function isCopterPropulsion(droidProp)
-{
-	var helicopterPropulsions = [
-		"Helicopter",
-	];
-
-	for (var i = 0, len = helicopterPropulsions.length; i < len; ++i)
-	{
-		var propulsion = helicopterPropulsions[i];
-
-		if (propulsion === droidProp)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-// Make sure a unit does not try to go off map
-function mapLimits(x, y, num1, num2, xOffset, yOffset)
-{
-	var coordinates = [];
-	var xPos = x + xOffset + random(num1) - num2;
-	var yPos = y + yOffset + random(num1) - num2;
-
-	if (xPos < 2)
-	{
-		xPos = 2;
-	}
-	if (yPos < 2)
-	{
-		yPos = 2;
-	}
-	if (xPos >= mapWidth - 2)
-	{
-		xPos = mapWidth - 3;
-	}
-	if (yPos >= mapHeight - 2)
-	{
-		yPos = mapHeight - 3;
-	}
-
-	return {"x": xPos, "y": yPos};
-}
-
-//Return a closeby enemy object. Will be undefined if none.
-function rangeStep(obj, visibility)
-{
-	const MAX_TILE_LIMIT = 260;
-	const STEP = 5;
-	var target;
-
-	for (var i = 0; i <= MAX_TILE_LIMIT; i += STEP)
-	{
-		var temp = enumRange(obj.x, obj.y, i, ENEMIES, visibility);
-		if (temp.length > 0)
-		{
-			target = findNearest(temp, obj.x, obj.y, true);
-			break;
-		}
-	}
-
-	return target;
-}
 
 const derrick = "A0ResourceExtractor";
 const factory = "A0BaBaFactory";
@@ -163,6 +80,89 @@ const vtolTemplates = [
 var globalDefendGroup; // tanks that defend all bases
 var needToPickGroup; // a group
 var baseInfo = [];
+
+// unit limit constant
+function atLimits()
+{
+	return countDroid(DROID_ANY, me) >= MAX_UNITS;
+}
+
+// random integer between 0 and max-1 (for convenience)
+function random(max)
+{
+	return (max <= 0) ? 0 : Math.floor(Math.random() * max);
+}
+
+// Returns true if something is defined
+function isDefined(data)
+{
+	return typeof(data) !== "undefined";
+}
+
+function isCopterPropulsion(droidProp)
+{
+	var helicopterPropulsions = [
+		"Helicopter",
+	];
+
+	for (var i = 0, len = helicopterPropulsions.length; i < len; ++i)
+	{
+		var propulsion = helicopterPropulsions[i];
+
+		if (propulsion === droidProp)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// Make sure a unit does not try to go off map
+function mapLimits(x, y, num1, num2, xOffset, yOffset)
+{
+	var xPos = x + xOffset + random(num1) - num2;
+	var yPos = y + yOffset + random(num1) - num2;
+
+	if (xPos < 2)
+	{
+		xPos = 2;
+	}
+	if (yPos < 2)
+	{
+		yPos = 2;
+	}
+	if (xPos >= mapWidth - 2)
+	{
+		xPos = mapWidth - 3;
+	}
+	if (yPos >= mapHeight - 2)
+	{
+		yPos = mapHeight - 3;
+	}
+
+	return {x: xPos, y: yPos};
+}
+
+//Return a closeby enemy object. Will be undefined if none.
+function rangeStep(obj, visibility)
+{
+	const MAX_TILE_LIMIT = 260;
+	const STEP = 5;
+	var target;
+
+	for (var i = 0; i <= MAX_TILE_LIMIT; i += STEP)
+	{
+		var temp = enumRange(obj.x, obj.y, i, ENEMIES, visibility);
+		if (temp.length > 0)
+		{
+			target = findNearest(temp, obj.x, obj.y, true);
+			break;
+		}
+	}
+
+	return target;
+}
 
 function constructBaseInfo(factory)
 {
@@ -243,7 +243,7 @@ function addDroidToSomeGroup(droid)
 
 			if (isCopterPropulsion(droid.propulsion))
 			{
-				groupAddDroid(base.helicoperAttackers, droid);
+				groupAddDroid(base.helicopterAttackers, droid);
 				break;
 			}
 
@@ -442,7 +442,7 @@ function produceCrane(fac)
 
 function produceDroid(fac)
 {
-	if (countDroid(DROID_CONSTRUCT, me) < 15 || !random(10))
+	if (countDroid(DROID_CONSTRUCT, me) < MAX_CRANES || !random(10))
 	{
 		if (gameTime < 300000)
 		{
@@ -593,7 +593,7 @@ function helicopterAttack()
 	for (var i = 0, len = baseInfo.length; i < len; ++i)
 	{
 		var base = baseInfo[i];
-		var copters = enumGroup(base.helicoperAttackers);
+		var copters = enumGroup(base.helicopterAttackers);
 		var target = rangeStep(base, false);
 
 		for (var j = 0, len2 = copters.length; j < len2; ++j)
@@ -721,11 +721,7 @@ function eventAttacked(victim, attacker)
 
 function eventDroidBuilt(droid, fac)
 {
-	if (!isCopterPropulsion(droid.propulsion))
-	{
-		groupAddDroid(needToPickGroup, droid);
-	}
-
+	groupAddDroid(needToPickGroup, droid);
 	reviseGroups();
 }
 
@@ -857,7 +853,7 @@ function cleanupBaseInfo()
 			var nex = enumGroup(base.nexusGroup);
 			var def = enumGroup(base.defendGroup);
 			var con = enumGroup(base.builderGroup);
-			var cop = enumGroup(base.helicoperAttackers);
+			var cop = enumGroup(base.helicopterAttackers);
 			units.concat(atk).concat(nex).concat(def).concat(con).concat(cop);
 			baseInfo.splice(i, 1);
 			break;
@@ -894,5 +890,5 @@ function eventStartLevel()
 	setTimer("buildThings", 900);
 	setTimer("groundAttackStuff", 1200);
 	setTimer("helicopterAttack", 2900);
-	setTimer("cleanupBaseInfo", 4000);
+	//setTimer("cleanupBaseInfo", 4000);
 }
