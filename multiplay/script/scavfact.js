@@ -3,13 +3,17 @@ const MIN_NEXUS = 4;
 const MAX_DEFENDERS = 8;
 const MAX_GLOBAL_DEFENDERS = 25;
 const MAX_SENSORS = 5;
-var currentEnemy;
-var lastChangedEnemyTime;
+const MAX_UNITS = 300;
+const MAX_HELICOPTERS = 40;
+const MAX_CRANES = 10;
+
+const CRANE_BODY = "B2crane";
+const CRANE_WEAP = "scavCrane";
 
 // unit limit constant
 function atLimits()
 {
-	return countDroid(DROID_ANY) > 299;
+	return countDroid(DROID_ANY, me) >= MAX_UNITS;
 }
 
 // random integer between 0 and max-1 (for convenience)
@@ -24,19 +28,23 @@ function isDefined(data)
 	return typeof(data) !== "undefined";
 }
 
-function log(message)
+function isCopterPropulsion(droidProp)
 {
-	dump(gameTime + " : " + message);
-}
+	var helicopterPropulsions = [
+		"Helicopter",
+	];
 
-function logObj(obj, message)
-{
-	dump(gameTime + " [" + obj.name + " id=" + obj.id + "] > " + message);
-}
+	for (var i = 0, len = helicopterPropulsions.length; i < len; ++i)
+	{
+		var propulsion = helicopterPropulsions[i];
 
-function isHeli(droid)
-{
-	return droid.propulsion === "Helicopter";
+		if (propulsion === droidProp)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // Make sure a unit does not try to go off map
@@ -69,15 +77,16 @@ function mapLimits(x, y, num1, num2, xOffset, yOffset)
 //Return a closeby enemy object. Will be undefined if none.
 function rangeStep(obj, visibility)
 {
-	const STEP = 1000;
+	const MAX_TILE_LIMIT = 260;
+	const STEP = 5;
 	var target;
 
-	for (var i = 0; i <= 30000; i += STEP)
+	for (var i = 0; i <= MAX_TILE_LIMIT; i += STEP)
 	{
-		var temp = enumRange(obj.x, obj.y, i, currentEnemy, visibility);
-		if (isDefined(temp[0]))
+		var temp = enumRange(obj.x, obj.y, i, ENEMIES, visibility);
+		if (temp.length > 0)
 		{
-			target = temp[0];
+			target = findNearest(temp, obj.x, obj.y, true);
 			break;
 		}
 	}
@@ -154,23 +163,27 @@ const vtolTemplates = [
 var globalDefendGroup; // tanks that defend all bases
 var needToPickGroup; // a group
 var baseInfo = [];
-var helicoperAttackers;
-var lifts;
 
-function constructBaseInfo(x, y)
+function constructBaseInfo(factory)
 {
-	this.x = x;
-	this.y = y;
-	this.defendGroup = newGroup(); // tanks to defend the base
-	this.nexusGroup = newGroup(); // tanks to capture the enemy
-	this.builderGroup = newGroup(); // trucks to build base structures and defenses
-	this.attackGroup = newGroup(); // tanks to attack nearby things
+	var info = {
+		x: factory.x,
+		y: factory.y,
+		id: factory.id,
+		defendGroup: newGroup(),
+		nexusGroup: newGroup(),
+		builderGroup: newGroup(),
+		attackGroup: newGroup(),
+		helicopterAttackers: newGroup(),
+	};
+
+	return info;
 }
 
 function findNearest(list, x, y, flag)
 {
 	var minDist = Infinity, minIdx;
-	for (var i = 0, l = list.length; i < l; ++i)
+	for (var i = 0, len = list.length; i < len; ++i)
 	{
 		var d = distBetweenTwoPoints(list[i].x, list[i].y, x, y);
 		if (d < minDist)
@@ -179,24 +192,36 @@ function findNearest(list, x, y, flag)
 			minIdx = i;
 		}
 	}
+
+	if (!isDefined(minIdx))
+	{
+		return undefined;
+	}
+
 	return (flag === true) ? list[minIdx] : minIdx;
 }
 
 function reviseGroups()
 {
 	var list = enumGroup(needToPickGroup);
-	for (var i = 0, l = list.length; i < l; ++i)
+	for (var i = 0, len = list.length; i < len; ++i)
 	{
 		var droid = list[i];
-		addDroidToSomeGroup(droid);
-		var coords = mapLimits(droid.x, droid.y, 15, 7, 0, 0);
-		orderDroidLoc(droid, DORDER_SCOUT, coords.x, coords.y);
+		if (addDroidToSomeGroup(droid))
+		{
+			var coords = mapLimits(droid.x, droid.y, 15, 7, 0, 0);
+			orderDroidLoc(droid, DORDER_SCOUT, coords.x, coords.y);
+		}
 	}
 }
 
 function addDroidToSomeGroup(droid)
 {
 	var base = findNearest(baseInfo, droid.x, droid.y, true);
+	if (!base)
+	{
+		return false;
+	}
 
 	switch (droid.droidType)
 	{
@@ -216,9 +241,16 @@ function addDroidToSomeGroup(droid)
 				break;
 			}
 
+			if (isCopterPropulsion(droid.propulsion))
+			{
+				groupAddDroid(base.helicoperAttackers, droid);
+				break;
+			}
+
 			if (groupSize(base.defendGroup) < MAX_DEFENDERS)
 			{
 				groupAddDroid(base.defendGroup, droid);
+				break;
 			}
 
 			if (groupSize(base.attackGroup) < MIN_ATTACKERS)
@@ -243,13 +275,9 @@ function addDroidToSomeGroup(droid)
 			groupAddDroid(base.attackGroup, droid);
 		}
 		break;
-
-		case DROID_PERSON:
-		{
-			groupAddDroid(base.defendGroup, droid);
-		}
-		break;
 	}
+
+	return true;
 }
 
 function groupOfTank(droid)
@@ -272,8 +300,10 @@ function buildStructure(droid, stat)
 {
 	if (droid.order !== DORDER_BUILD && isStructureAvailable(stat, me))
 	{
-		var loc = pickStructLocation(droid, stat, droid.x, droid.y, 0);
-		if (isDefined(loc) && orderDroidBuild(droid, DORDER_BUILD, stat, loc.x, loc.y))
+		const MAX_BLOCK_TILES = 0;
+		var loc = pickStructLocation(droid, stat, droid.x, droid.y, MAX_BLOCK_TILES);
+
+		if (loc && orderDroidBuild(droid, DORDER_BUILD, stat, loc.x, loc.y))
 		{
 			return true;
 		}
@@ -289,17 +319,13 @@ function buildTower(droid)
 
 function establishBase(droid)
 {
-	var base = findNearest(baseInfo, droid.x, droid.y, true);
-	var dist = distBetweenTwoPoints(base.x, base.y, droid.x, droid.y);
-
-	//dist makes sure that factories are not built too close to eachother
-	if (dist > 8 && buildStructure(droid, factory))
+	if (buildStructure(droid, factory))
 	{
-		var n = baseInfo.length;
-		baseInfo[n] = new constructBaseInfo(droid.x, droid.y);
-		groupAddDroid(baseInfo[n].builderGroup, droid);
+		baseInfo.push(constructBaseInfo(factory));
+		groupAddDroid(baseInfo[baseInfo.length - 1].builderGroup, droid);
 		return true;
 	}
+
 	return false;
 }
 
@@ -329,7 +355,7 @@ function buildThingsWithDroid(droid)
 		break;
 		case 3:
 			var result = findNearest(enumFeature(-1, oilres), droid.x, droid.y, true);
-			if (isDefined(result))
+			if (result)
 			{
 				orderDroidBuild(droid, DORDER_BUILD, derrick, result.x, result.y);
 			}
@@ -357,22 +383,20 @@ function buildThingsWithDroid(droid)
 
 function buildThings()
 {
-	var list = enumDroid(me, DROID_CONSTRUCT).filter(function(dr) {
-		return (dr.order !== DORDER_BUILD);
-	});
+	var list = enumDroid(me, DROID_CONSTRUCT);
 
-	for (var i = 0, d = list.length; i < d; ++i)
+	for (var i = 0, len = list.length; i < len; ++i)
 	{
 		var droid = list[i];
-		if (droid.order !== DORDER_RTR)
+		if (droid.order !== DORDER_RTR && droid.order !== DORDER_BUILD)
 		{
-			//Build a defense at an enemy derrick
-			for (var q = 0; q < maxPlayers; ++q)
+			//Build a defense at an enemy derrick should we happen to be idle near one
+			for (var j = 0; j < maxPlayers; ++j)
 			{
-				var dlist = enumStruct(q, derrick);
-				for (var r = 0, l = dlist.length; r < l; ++r)
+				var dlist = enumStruct(j, derrick);
+				for (var x = 0, len2 = dlist.length; x < len2; ++x)
 				{
-					var enemy_derrick = dlist[r];
+					var enemy_derrick = dlist[x];
 					if (distBetweenTwoPoints(droid.x, droid.y, enemy_derrick.x, enemy_derrick.y) < 3)
 					{
 						buildTower(droid);
@@ -406,13 +430,11 @@ function scavBuildDroid(fac, name, body, prop, weapon)
 
 function produceCrane(fac)
 {
-	if (countDroid(DROID_CONSTRUCT, me) > 15)
+	if (countDroid(DROID_CONSTRUCT, me) >= MAX_CRANES)
 	{
 		return false;
 	}
 
-	const CRANE_BODY = "B2crane";
-	const CRANE_WEAP = "scavCrane";
 	var num = random(2) + 1; // Choose crane 1 or 2.
 
 	return buildDroid(fac, "Crane", CRANE_BODY + num, "BaBaProp", "", "", CRANE_WEAP + num);
@@ -480,12 +502,8 @@ function produceHelicopter(fac)
 			break;
 		}
 	}
-	scavBuildDroid(fac, "ScavengerHelicopter", vtolTemplates[j][0], "Helicopter", weapons);
-}
 
-function structureReady(struct)
-{
-	return (structureIdle(struct) && struct.status === BUILT);
+	scavBuildDroid(fac, "ScavengerHelicopter", vtolTemplates[j][0], "Helicopter", weapons);
 }
 
 function produceThings()
@@ -495,32 +513,28 @@ function produceThings()
 		return;
 	}
 
-	var list = enumStruct(me, factory);
-	for (var i = 0, f = list.length; i < f; ++i)
+	var list = enumStruct(me, factory).concat(enumStruct(me, vtolfac));
+	for (var i = 0, len = list.length; i < len; ++i)
 	{
 		var fac = list[i];
 
-		if (structureReady(fac))
+		if (structureIdle(fac) && fac.status === BUILT)
 		{
-			produceDroid(fac);
-		}
-	}
-
-	list = enumStruct(me, vtolfac);
-	for (var i = 0, f = list.length; i < f; ++i)
-	{
-		var fac = list[i];
-
-		if (structureReady(fac))
-		{
-			produceHelicopter(fac);
+			if (fac.stattype === FACTORY)
+			{
+				produceDroid(fac);
+			}
+			else if (fac.stattype === VTOL_FACTORY)
+			{
+				produceHelicopter(fac);
+			}
 		}
 	}
 }
 
 function attackWithDroid(droid, target, force)
 {
-	if (isHeli(droid) || droid.order === DORDER_RTR)
+	if (isCopterPropulsion(droid.propulsion) || droid.order === DORDER_RTR)
 	{
 		return;
 	}
@@ -543,9 +557,10 @@ function attackWithDroid(droid, target, force)
 
 function helicopterArmed(obj)
 {
-	for (var i = 0; i < obj.weapons.length; ++i)
+	for (var i = 0, len = obj.weapons.length; i < len; ++i)
 	{
-		if (Math.floor(obj.weapons[i].armed) > 0)
+		var weapon = obj.weapons[i];
+		if (weapon.armed > 0)
 		{
 			return true;
 		}
@@ -575,74 +590,68 @@ function helicopterReady(droid)
 //Helicopters can only attack things that the scavengers have seen
 function helicopterAttack()
 {
-	var list = findFreeHelicopters();
-	if (!list.len)
+	for (var i = 0, len = baseInfo.length; i < len; ++i)
 	{
-		return;
-	}
+		var base = baseInfo[i];
+		var copters = enumGroup(base.helicoperAttackers);
+		var target = rangeStep(base, false);
 
-	var cheatVision = (random(100) < 25);
-	for (var i = 0, l = list.len; i < l; ++i)
-	{
-		var droid = list.copters[i];
-		var target = rangeStep(findNearest(baseInfo, droid.x, droid.y, true), cheatVision);
-		var coords = [];
-
-		if (isDefined(target))
+		for (var j = 0, len2 = copters.length; j < len2; ++j)
 		{
-			coords = mapLimits(target.x, target.y, 5, 2, 0, 0);
-		}
-		else
-		{
-			var xOff = random(2);
-			var yOff = random(2);
-			xOff = (!xOff) ? -random(10) : random(10);
-			yOff = (!yOff) ? -random(10) : random(10);
-			coords = mapLimits(droid.x, droid.y, 5, 2, xOff, yOff);
-		}
+			var coords = [];
+			var droid = copters[j];
 
-		orderDroidLoc(droid, DORDER_SCOUT, coords.x, coords.y);
+			if (!helicopterReady(droid))
+			{
+				continue;
+			}
+
+			if (target)
+			{
+				coords = mapLimits(target.x, target.y, 5, 2, 0, 0);
+			}
+			else
+			{
+				var xOff = random(2);
+				var yOff = random(2);
+				xOff = (!xOff) ? -random(10) : random(10);
+				yOff = (!yOff) ? -random(10) : random(10);
+				coords = mapLimits(droid.x, droid.y, 5, 2, xOff, yOff);
+			}
+
+			orderDroidLoc(droid, DORDER_SCOUT, coords.x, coords.y);
+		}
 	}
 }
 
 //Ignores lifts
 function countHelicopters()
 {
-	return groupSize(helicoperAttackers);
-}
+	var count = 0;
 
-//ignores lifts
-function findFreeHelicopters()
-{
-	var freeHelis = enumGroup(helicoperAttackers).filter(function(object) {
-		return helicopterReady(object);
+	enumDroid(me).forEach(function(droid) {
+		if (isCopterPropulsion(droid.propulsion))
+		{
+			++count;
+		}
 	});
 
-	return {copters: freeHelis, len: freeHelis.length};
+	return count;
 }
 
 function groundAttackStuff()
 {
-	if (!baseInfo.length)
-	{
-		return;
-	}
-	if (random(100) < 20)
-	{
-		changeEnemy();
-	}
-
-	for (var i = 0, l = baseInfo.length; i < l; ++i)
+	for (var i = 0, len = baseInfo.length; i < len; ++i)
 	{
 		var base = baseInfo[i];
 		var target = rangeStep(base, false);
-		if (isDefined(target))
+		if (target)
 		{
 			var attackDroids = enumGroup(base.attackGroup);
 			var nexusDroids = enumGroup(base.nexusGroup);
 			if (groupSize(base.attackGroup) > MIN_ATTACKERS)
 			{
-				for (var i = 0, l = attackDroids.length; i < l; ++i)
+				for (var i = 0, len2 = attackDroids.length; i < len2; ++i)
 				{
 					attackWithDroid(attackDroids[i], target, false);
 				}
@@ -650,74 +659,12 @@ function groundAttackStuff()
 
 			if (groupSize(base.nexusGroup) > MIN_NEXUS)
 			{
-				for (var i = 0, l = nexusDroids.length; i < l; ++i)
+				for (var i = 0, len2 = nexusDroids.length; i < len2; ++i)
 				{
 					attackWithDroid(nexusDroids[i], target, false);
 				}
 			}
 		}
-	}
-}
-
-//Return all enemy players that are still alive. An optional argument can be
-//passed to determine if that specific player is alive or not.
-function getAliveEnemyPlayers(player)
-{
-	if (isDefined(player))
-	{
-		if ((countStruct("A0LightFactory", player) + countStruct("A0CyborgFactory", player) + countDroid(DROID_CONSTRUCT, player)) > 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	var numEnemies = [];
-	for (var i = 0; i < maxPlayers; i++)
-	{
-		if (!allianceExistsBetween(me, i) && i !== me)
-		{
-			//Are they alive (have factories and constructs)
-			//Even if they still have attack droids, eventAttacked() will find them anyway if they do attack.
-			if ((countStruct("A0LightFactory", i) + countStruct("A0CyborgFactory", i) + countDroid(DROID_CONSTRUCT, i)) > 0)
-			{
-				numEnemies.push(i); // count 'em, then kill 'em :)
-			}
-		}
-	}
-
-	return numEnemies;
-}
-
-function changeEnemy(player)
-{
-	if (lastChangedEnemyTime + 50000 > gameTime)
-	{
-		return;
-	}
-
-	if (!isDefined(player) || !getAliveEnemyPlayers(currentEnemy))
-	{
-		var living = getAliveEnemyPlayers();
-		var num = living.length;
-		if (!num)
-		{
-			currentEnemy = 0; //Just choose player 0 as a default.
-			return;
-		}
-		var temp = living[random(num)];
-		if (temp === currentEnemy)
-		{
-			return;
-		}
-		currentEnemy = temp;
-		lastChangedEnemyTime = gameTime;
-	}
-	else if (isDefined(player) && currentEnemy !== player)
-	{
-		currentEnemy = player;
-		lastChangedEnemyTime = gameTime;
 	}
 }
 
@@ -729,77 +676,57 @@ function eventAttacked(victim, attacker)
 		return;
 	}
 
-	changeEnemy(attacker.player);
-	if (random(100) < 15)
+	var droids = enumGroup(globalDefendGroup);
+	for (var i = 0, len = droids.length; i < len; ++i)
 	{
-		var droids = enumGroup(globalDefendGroup);
-		for (var i = 0, l = droids.length; i < l; ++i)
+		var droid = droids[i];
+		if (droid.order !== DORDER_ATTACK)
 		{
-			attackWithDroid(droids[i], attacker, true);
+			attackWithDroid(droid, attacker, true);
 		}
 	}
 
 	if (victim.type === STRUCTURE)
 	{
 		var base = findNearest(baseInfo, victim.x, victim.y, true);
-		if (isDefined(base))
+		if (!base)
 		{
-			var list = enumGroup(base.defendGroup);
-
-			//Let this base build more defense units then
-			if (list.length < Math.floor(MAX_DEFENDERS / 2))
-			{
-				list = enumGroup(base.attackDroids);
-			}
-
-			for (var i = 0, l = list.length; i < l; ++i)
-			{
-				attackWithDroid(list[i], attacker, true);
-			}
+			return;
 		}
 
+		var list = enumGroup(base.defendGroup);
+
+		//Let this base build more defense units then
+		if (list.length < Math.floor(MAX_DEFENDERS / 2))
+		{
+			list = enumGroup(base.attackDroids);
+		}
+
+		for (var i = 0, len = list.length; i < len; ++i)
+		{
+			attackWithDroid(list[i], attacker, true);
+		}
 	}
 	else if (victim.type === DROID)
 	{
-		if (isHeli(victim))
+		if (isCopterPropulsion(victim.propulsion))
 		{
 			return;
 		}
 
 		retreat(victim);
-
-		var gr = groupOfTank(victim);
-		if (isDefined(gr))
-		{
-			var list = enumGroup(gr);
-			for (var i = 0, l = list.length; i < l; ++i)
-			{
-				attackWithDroid(list[i], attacker, true);
-			}
-		}
 	}
 }
 
+
 function eventDroidBuilt(droid, fac)
 {
-	if (!isHeli(droid))
+	if (!isCopterPropulsion(droid.propulsion))
 	{
 		groupAddDroid(needToPickGroup, droid);
-		queue("reviseGroups", 200);
-	}
-	else
-	{
-		if (droid.body !== "ChinookBody")
-		{
-			groupAddDroid(helicoperAttackers, droid);
-		}
-		else
-		{
-			groupAddDroid(lifts, droid);
-		}
 	}
 
-	produceThings();
+	reviseGroups();
 }
 
 function eventStructureBuilt(structure, droid)
@@ -819,7 +746,7 @@ function eventStructureBuilt(structure, droid)
 
 function eventGameInit()
 {
-	for (var i = 0; i < templates.length; ++i)
+	for (var i = 0, len = templates.length; i < len; ++i)
 	{
 		makeComponentAvailable(templates[i][0], me);
 		makeComponentAvailable(templates[i][1], me);
@@ -835,7 +762,7 @@ function eventGameInit()
 		}
 	}
 
-	for (var i = 0; i < vtolTemplates.length; ++i)
+	for (var i = 0, len = vtolTemplates.length; i < len; ++i)
 	{
 
 		makeComponentAvailable(vtolTemplates[i][0], me);
@@ -863,7 +790,7 @@ function eventGameInit()
 		"BabaFlame", "bTrikeMG", "BuggyMG", "BJeepMG", "ChinookBody",
 	];
 
-	for (var i = 0, c = SCAV_COMPONENTS.length; i < c; ++i)
+	for (var i = 0, len = SCAV_COMPONENTS.length; i < len; ++i)
 	{
 		makeComponentAvailable(SCAV_COMPONENTS[i], me);
 	}
@@ -875,7 +802,7 @@ function eventGameInit()
 	enableStructure(repair, me);
 	enableStructure(vtolpad, me);
 
-	for (var i = 0, d = defenses.length; i < d; ++i)
+	for (var i = 0, len = defenses.length; i < len; ++i)
 	{
 		enableStructure(defenses[i], me);
 	}
@@ -884,6 +811,11 @@ function eventGameInit()
 // respond correctly on unit transfers
 function eventObjectTransfer(object, from)
 {
+	if (object.player !== me)
+	{
+		return; //not mine
+	}
+
 	if (object.type === DROID)
 	{
 		eventDroidBuilt(object, null);
@@ -896,55 +828,71 @@ function eventObjectTransfer(object, from)
 
 function retreat(obj)
 {
-	if (isDefined(obj) && obj.type === DROID && obj.order !== DORDER_RTR)
+	const REPAIR_PERCENT = 85;
+
+	if (obj.type === DROID && obj.order !== DORDER_RTR)
 	{
-		if (!isHeli(obj) && obj.health < 75)
+		if (!isCopterPropulsion(obj.propulsion) && obj.health < REPAIR_PERCENT)
 		{
 			orderDroid(obj, DORDER_RTR);
 		}
 		return;
 	}
+}
 
-	var list = enumDroid(me);
-	for (var i = 0, l = list.length; i < l; ++i)
+//Check to see if a base factory still exists, and, if not, then free its groups
+//and put them into another base.
+function cleanupBaseInfo()
+{
+	var units = [];
+
+	for (var i = 0, len = baseInfo.length; i < len; ++i)
 	{
-		var droid = list[i];
-		if (!random(4) && !isHeli(droid) && droid.order !== DORDER_RTR)
+		var base = baseInfo[i];
+		var factory = getObject(STRUCTURE, me, base.id);
+
+		if (factory === null)
 		{
-			if (droid.health < 80)
-			{
-				orderDroid(droid, DORDER_RTR);
-			}
+			var atk = enumGroup(base.attackGroup);
+			var nex = enumGroup(base.nexusGroup);
+			var def = enumGroup(base.defendGroup);
+			var con = enumGroup(base.builderGroup);
+			var cop = enumGroup(base.helicoperAttackers);
+			units.concat(atk).concat(nex).concat(def).concat(con).concat(cop);
+			baseInfo.splice(i, 1);
+			break;
 		}
+	}
+
+	for (var i = 0, len = units.length; i < len; ++i)
+	{
+		var droid = units[i];
+		eventDroidBuilt(droid, null);
 	}
 }
 
 function eventStartLevel()
 {
-	var list = enumStruct(me, factory);
-	for (var i = 0, l = list.length; i < l; ++i)
+	var factories = enumStruct(me, factory);
+	for (var i = 0, len = factories.length; i < len; ++i)
 	{
-		var fac = list[i];
-		baseInfo[i] = new constructBaseInfo(fac.x, fac.y);
+		var fac = factories[i];
+		baseInfo.push(constructBaseInfo(fac));
 	}
-	currentEnemy = random(maxPlayers);
-	lastChangedEnemyTime = 0;
-	list = enumDroid(me);
 
-	for (var i = 0, l = list.length; i < l; ++i)
+	var droids = enumDroid(me);
+	for (var i = 0, len = droids.length; i < len; ++i)
 	{
-		addDroidToSomeGroup(list[i]);
+		addDroidToSomeGroup(droids[i]);
 	}
 
 	globalDefendGroup = newGroup();
 	needToPickGroup = newGroup();
-	helicopterAttackers = newGroup();
-	lifts = newGroup();
 
 	produceThings();
-	setTimer("retreat", 600);
-	setTimer("produceThings", 900);
-	setTimer("buildThings", 1200);
-	setTimer("groundAttackStuff", 2000);
-	setTimer("helicopterAttack", 3000);
+	setTimer("produceThings", 300);
+	setTimer("buildThings", 900);
+	setTimer("groundAttackStuff", 1200);
+	setTimer("helicopterAttack", 2900);
+	setTimer("cleanupBaseInfo", 4000);
 }
