@@ -72,7 +72,7 @@ const templates = [
 ];
 
 const vtolTemplates = [
-	["ScavengerChopper", "MG1-VTOL-SCAVS", "MG1-VTOL-SCAVS", "MG1-VTOL-SCAVS"],
+	["ScavengerChopper", "MG1-VTOL-SCAVS"],
 	["HeavyChopper", "Rocket-VTOL-Pod-SCAVS"],
 ];
 
@@ -412,16 +412,19 @@ function scavBuildDroid(fac, name, body, prop, weapon)
 {
 	var success = false;
 
-	if (isDefined(weapon[2]))
+	if (weapon.length === 3)
 	{
+		dump(gameTime + " : " + weapon[0] + " " + weapon[1] + " " + weapon[2]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1], weapon[2]);
 	}
-	else if (isDefined(weapon[1]))
+	else if (weapon.length === 2)
 	{
+		dump(gameTime + " : " + weapon[0] + " " + weapon[1]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1]);
 	}
 	else
 	{
+		dump(gameTime + " : " + weapon[0]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0]);
 	}
 
@@ -470,16 +473,10 @@ function produceDroid(fac)
 		var j = random(templates.length);
 		var name = (templates[j][1].indexOf("NEXUS") > -1) ? "Nexus Tank" : "Scavenger unit";
 
-		for (var x = 1; x < 4; ++x)
+		for (var x = 1; x < templates[j].length; ++x)
 		{
-			if (isDefined(templates[j][x]))
-			{
-				weapons.push(templates[j][x]);
-			}
-			else
-			{
-				break;
-			}
+			var weapon = templates[j][x];
+			weapons.push(weapon);
 		}
 
 		scavBuildDroid(fac, name, templates[j][0], "BaBaProp", weapons);
@@ -491,16 +488,10 @@ function produceHelicopter(fac)
 	var j = random(vtolTemplates.length);
 	var weapons = [];
 
-	for (var x = 1; x < 4; ++x)
+	for (var x = 1; x < vtolTemplates[j].length; ++x)
 	{
-		if (isDefined(vtolTemplates[j][x]))
-		{
-			weapons.push(vtolTemplates[j][x]);
-		}
-		else
-		{
-			break;
-		}
+		var weapon = vtolTemplates[j][x];
+		weapons.push(weapon);
 	}
 
 	scavBuildDroid(fac, "ScavengerHelicopter", vtolTemplates[j][0], "Helicopter", weapons);

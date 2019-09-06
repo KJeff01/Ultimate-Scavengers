@@ -86,7 +86,7 @@
 		"name": "*scavenger truck*",
 		"powerOutput": 8000,
 		"size": "LIGHT",
-		"weaponSlots": 1,
+		"weaponSlots": 3,
 		"weight": 2000
 	},
 	"ScavNEXUSbody": {
@@ -139,7 +139,7 @@
 			}
 		},
 		"size": "LIGHT",
-		"weaponSlots": 3,
+		"weaponSlots": 1,
 		"weight": 800
 	},
 	"HeavyChopper": {
@@ -162,7 +162,7 @@
 			}
 		},
 		"size": "LIGHT",
-		"weaponSlots": 3,
+		"weaponSlots": 1,
 		"weight": 1500
 	},
 	"ChinookBody": {
@@ -186,7 +186,7 @@
 		},
 		"powerOutput": 3500,
 		"size": "LIGHT",
-		"weaponSlots": 3,
+		"weaponSlots": 1,
 		"weight": 3000
 	},
 	"B1BaBaPerson01": {
