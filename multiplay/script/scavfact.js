@@ -445,18 +445,13 @@ function produceCrane(fac)
 
 function produceDroid(fac)
 {
-	if (countDroid(DROID_CONSTRUCT, me) < MAX_CRANES || !random(10))
+	const MIN_CRANES = 4;
+	var craneCount = countDroid(DROID_CONSTRUCT, me);
+
+	if ((craneCount < MIN_CRANES) || ((craneCount < MAX_CRANES) && !random(10)))
 	{
-		if (gameTime < 300000)
-		{
-			produceCrane(fac);
-			return;
-		}
-		else if (countDroid(DROID_CONSTRUCT, me) < 3)
-		{
-			produceCrane(fac);
-			return;
-		}
+		produceCrane(fac);
+		return;
 	}
 
 	var weapons = [];
