@@ -512,7 +512,7 @@
 			"milasbas.pie"
 		],
 		"thermal": 16,
-		"type": "GENERIC",
+		"type": "LASSAT",
 		"userLimits": [0, 1, 1],
 		"weapons": [
 			"LasSat"
@@ -1745,7 +1745,7 @@
 		"height": 1,
 		"hitpoints": 700,
 		"id": "PillBox3",
-		"name": "Heavy Machinegun Bunker",
+		"name": "HMG Bunker",
 		"resistance": 150,
 		"sensorID": "DefaultSensor1Mk1",
 		"strength": "BUNKER",
