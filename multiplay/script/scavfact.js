@@ -414,17 +414,14 @@ function scavBuildDroid(fac, name, body, prop, weapon)
 
 	if (weapon.length === 3)
 	{
-		dump(gameTime + " : " + weapon[0] + " " + weapon[1] + " " + weapon[2]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1], weapon[2]);
 	}
 	else if (weapon.length === 2)
 	{
-		dump(gameTime + " : " + weapon[0] + " " + weapon[1]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0], weapon[1]);
 	}
 	else
 	{
-		dump(gameTime + " : " + weapon[0]);
 		success = buildDroid(fac, name, body, prop, "", "", weapon[0]);
 	}
 
